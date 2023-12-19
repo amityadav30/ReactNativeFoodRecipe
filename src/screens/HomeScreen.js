@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Image, ScrollView, TextInput } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  ScrollView,
+  TextInput,
+  TouchableOpacity,
+} from "react-native";
 import { BellIcon, MagnifyingGlassIcon } from "react-native-heroicons/outline";
 import { StatusBar } from "expo-status-bar";
 import {
@@ -13,16 +20,20 @@ import Recipie from "../components/Recipie";
 const HomeScreen = () => {
   const [isActive, setIsActive] = useState("Starter");
   const [categories, setCategories] = useState([]);
+  const [displayCat, setdisplayCat] = useState([]);
   const [recipie, setRecipie] = useState([]);
-
+  const [searchValue, setSearchValue] = useState("");
+  console.log("In home");
   const handleIsActive = (cat) => {
     setIsActive(cat);
     getRecipie(cat);
+    console.log("CATTT ", cat);
   };
 
   useEffect(() => {
     getCategories();
     getRecipie("Starter");
+    console.log("IN USEEFFECT");
   }, []);
 
   const getRecipie = async (category) => {
@@ -31,7 +42,6 @@ const HomeScreen = () => {
         `https://themealdb.com/api/json/v1/1/filter.php?c=${category}`
       );
       if (response || response.data) {
-        console.log("RECIPIE response ", response.data);
         setRecipie(response.data.meals);
       }
     } catch (err) {
@@ -46,10 +56,21 @@ const HomeScreen = () => {
       );
       if (response && response.data) {
         setCategories(response.data.categories);
+        setdisplayCat(response.data.categories);
       }
     } catch (err) {
       console.log("Error ", err.message);
     }
+  };
+
+  const handleSearch = () => {
+    const newCategories = categories.filter((category) =>
+      category.strCategory.toLowerCase().includes(searchValue.toLowerCase())
+    );
+    setdisplayCat(newCategories);
+    getRecipie(newCategories[0]?.strCategory);
+    setIsActive(newCategories[0]?.strCategory);
+    console.log("In Handle", newCategories[0]?.strCategory);
   };
 
   return (
@@ -85,17 +106,26 @@ const HomeScreen = () => {
             placeholderTextColor={"gray"}
             className=" h-9   flex-1 tracking-wider"
             style={{ fontSize: hp(1.7), paddingHorizontal: wp(1.5) }}
+            onChangeText={(text) => setSearchValue(text)}
+            onSubmitEditing={handleSearch}
           />
+
           <View className="bg-white rounded-full p-3 ">
-            <MagnifyingGlassIcon color="gray" stroke-width={3} size={hp(2.5)} />
+            <TouchableOpacity onPress={handleSearch}>
+              <MagnifyingGlassIcon
+                color="gray"
+                stroke-width={3}
+                size={hp(2.5)}
+              />
+            </TouchableOpacity>
           </View>
         </View>
 
         {/* Categories */}
         <View>
-          {categories.length > 0 && ( //load only when we have data in categories
+          {displayCat.length > 0 && ( //load only when we have data in categories
             <Categories
-              categories={categories}
+              categories={displayCat}
               handleIsActive={handleIsActive}
               isActive={isActive}
             />
@@ -105,7 +135,7 @@ const HomeScreen = () => {
         {/* Recipie */}
 
         <View>
-          <Recipie categories={categories} recipie={recipie} />
+          <Recipie categories={displayCat} recipie={recipie} />
         </View>
       </ScrollView>
     </View>

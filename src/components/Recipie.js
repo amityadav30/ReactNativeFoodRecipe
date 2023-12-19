@@ -1,14 +1,16 @@
 import { View, Text, Image, Pressable } from "react-native";
 import { mealData } from "../constants";
-import React from "react";
+import React, { useState } from "react";
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import MasonryList from "@react-native-seoul/masonry-list";
+import { useNavigation } from "@react-navigation/native";
 
 const Recipie = ({ categories, recipie }) => {
-  console.log("RRRRRRRRR", recipie);
+  const navigation = useNavigation();
+
   return (
     <View className="mx-4">
       <Text
@@ -23,7 +25,9 @@ const Recipie = ({ categories, recipie }) => {
           keyExtractor={(item) => item.idMeal}
           numColumns={2}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item, i }) => <RecipieCard item={item} index={i} />}
+          renderItem={({ item, i }) => (
+            <RecipieCard item={item} index={i} navigation={navigation} />
+          )}
           onEndReachedThreshold={0.1}
         />
       )}
@@ -31,8 +35,7 @@ const Recipie = ({ categories, recipie }) => {
   );
 };
 
-const RecipieCard = ({ item, index }) => {
-  console.log("in Recipie ", item.image);
+const RecipieCard = ({ item, index, navigation }) => {
   const isEven = index % 2;
 
   return (
@@ -43,6 +46,7 @@ const RecipieCard = ({ item, index }) => {
         paddingRight: isEven ? 0 : 8,
       }}
       className=" mb-4 flex justify-center space-y-1 "
+      onPress={() => navigation.navigate("RecipeDetailScreen", { item, index })}
     >
       <Image
         source={{ uri: item.strMealThumb }}
